@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Naver Login Test</title>
+</head>
+<body>
+    <h1>Naver Login</h1>
+    <span th:if="${userId==null}">
+        <a href="https://nid.naver.com/oauth2.0/authorize?client_id=HITMO18RZpwaCpSaX0Vy&redirect_uri=http://localhost:8080/login/naver&response_type=code">
+            <img src="img/btnG_완성형.png" width="200">
+        </a>
+    </span>
+    <form name="logout" action="http://localhost:8080/logout">
+        <span th:if="${userId!=null}">
+            <input type="submit" value="로그아웃">
+        </span>
+    </form>
+</body>
+</html>
