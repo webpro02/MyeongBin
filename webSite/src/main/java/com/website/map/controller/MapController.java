@@ -1,12 +1,12 @@
-package com.website.kakao.controller;
+package com.website.map.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
-public class kakaoController {
+public class MapController {
 
-    @GetMapping("/kakaomap")
+    @GetMapping("/map")
     public String showKakaoMap() {
-        return "kakaomap";
+        return "map";
     }
 }
