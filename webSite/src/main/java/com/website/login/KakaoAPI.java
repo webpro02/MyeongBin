@@ -1,40 +1,39 @@
-package com.website.naver;
+package com.website.login;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.UUID;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-public class NaverAPI {
-
+public class KakaoAPI {
+	
 	public String getAccessToken(String code) {
-		String state = UUID.randomUUID().toString();
 		String accessToken = "";
-		String reqURL = "https://nid.naver.com/oauth2.0/token";
+		String refreshToken = "";
+		String reqURL = "https://kauth.kakao.com/oauth/token";
 		
 		try {
 			URL url = new URL(reqURL);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			
 			conn.setRequestMethod("POST");
 			conn.setDoOutput(true);
 			
 			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream()));
 			StringBuilder sb = new StringBuilder();
 			sb.append("grant_type=authorization_code");
-			sb.append("&client_id=HITMO18RZpwaCpSaX0Vy");
-			sb.append("&client_secret=LhKoiaiay5");
-			sb.append("&redirect_uri=http://localhost:8080/login/naver");
-			sb.append("&code="+code);
-			sb.append("&state="+state);
+			sb.append("&client_id=cff730214ee53486bf7a0421090a41bb");
+			sb.append("&redirect_uri=http://localhost:8080/login");
+			sb.append("&code=" + code);
+			
 			bw.write(sb.toString());
 			bw.flush();
 			
@@ -42,9 +41,9 @@ public class NaverAPI {
 			System.out.println("response code = " + responseCode);
 			
 			BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+			
 			String line = "";
 			String result = "";
-			
 			while((line = br.readLine())!=null) {
 				result += line;
 			}
@@ -54,11 +53,11 @@ public class NaverAPI {
 			JsonElement element = parser.parse(result);
 			
 			accessToken = element.getAsJsonObject().get("access_token").getAsString();
-			//refreshToken = element.getAsJsonObject().get("refresh_token").getAsString();
+			refreshToken = element.getAsJsonObject().get("refresh_token").getAsString();
 			
 			br.close();
 			bw.close();
-		} catch (Exception e) {
+		}catch (Exception e) {
 			e.printStackTrace();
 		}
 		return accessToken;
@@ -67,14 +66,12 @@ public class NaverAPI {
 	
 	public HashMap<String, Object> getUserInfo(String accessToken) {
 		HashMap<String, Object> userInfo = new HashMap<String, Object>();
-		String reqUrl = "https://openapi.naver.com/v1/nid/me";
+		String reqUrl = "https://kapi.kakao.com/v2/user/me";
 		try {
 			URL url = new URL(reqUrl);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestMethod("POST");
-			
 			conn.setRequestProperty("Authorization", "Bearer " + accessToken);
-			
 			int responseCode = conn.getResponseCode();
 			System.out.println("responseCode =" + responseCode);
 			
@@ -87,17 +84,19 @@ public class NaverAPI {
 				result += line;
 			}
 			System.out.println("response body ="+result);
-	
+			
 			JsonParser parser = new JsonParser();
 			JsonElement element =  parser.parse(result);
 			
-			JsonObject response = element.getAsJsonObject().get("response").getAsJsonObject();
+			JsonObject properties = element.getAsJsonObject().get("properties").getAsJsonObject();
+			JsonObject kakaoAccount = element.getAsJsonObject().get("kakao_account").getAsJsonObject();
 			
-			String name = response.getAsJsonObject().get("name").getAsString();
-	        String email = response.getAsJsonObject().get("email").getAsString();
+			String nickname = properties.getAsJsonObject().get("nickname").getAsString();
+			String email = kakaoAccount.getAsJsonObject().get("email").getAsString();
 			
-			userInfo.put("name", name);
+			userInfo.put("nickname", nickname);
 			userInfo.put("email", email);
+			
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -105,8 +104,9 @@ public class NaverAPI {
 		return userInfo;
 	}
 
-	public void naverLogout(String accessToken) {
-		String reqURL = "https://nid.naver.com/oauth2.0/token?grant_type=delete&client_id=HITMO18RZpwaCpSaX0Vy&client_secret=LhKoiaiay5&access_token=" + accessToken + "&service_provider=NAVER";
+
+	public void kakaoLogout(String accessToken) {
+		String reqURL = "https://kapi.kakao.com/v1/user/logout/kakao";
 		try {
 			URL url = new URL(reqURL);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -127,5 +127,5 @@ public class NaverAPI {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	} 
+	}
 }
